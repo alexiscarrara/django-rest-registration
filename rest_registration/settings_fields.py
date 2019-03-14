@@ -86,6 +86,9 @@ RESET_PASSWORD_SETTINGS_FIELDS = [
             'body': 'rest_registration/reset_password/body.txt',
         },
     ),
+    Field(
+        'RESET_PASSWORD_VERIFICATION_EMAIL_TEMPLATES_I18N'
+    )
 ]
 REGISTER_EMAIL_SETTINGS_FIELDS = [
     Field('REGISTER_EMAIL_VERIFICATION_ENABLED', default=True),
@@ -101,6 +104,10 @@ REGISTER_EMAIL_SETTINGS_FIELDS = [
             'body': 'rest_registration/register_email/body.txt',
         },
     ),
+    Field(
+        'REGISTER_EMAIL_VERIFICATION_EMAIL_TEMPLATES_I18N'
+    ),
+
 ]
 
 GLOBAL_VERIFICATION_SETTINGS_FIELDS = [

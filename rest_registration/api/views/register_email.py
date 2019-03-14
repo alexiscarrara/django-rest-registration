@@ -25,6 +25,7 @@ class RegisterEmailSigner(URLParamsSigner):
 
 class RegisterEmailSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
+    language = serializers.CharField()
 
 
 @api_view_serializer_class(RegisterEmailSerializer)
@@ -40,9 +41,14 @@ def register_email(request):
     serializer.is_valid(raise_exception=True)
 
     email = serializer.validated_data['email']
+    language = serializer.validated_data['language']
 
-    template_config = (
-        registration_settings.REGISTER_EMAIL_VERIFICATION_EMAIL_TEMPLATES)
+    if language:
+        template_config = (registration_settings.REGISTER_EMAIL_VERIFICATION_EMAIL_TEMPLATES_I18N[language])
+    else:
+        template_config = (
+            registration_settings.REGISTER_EMAIL_VERIFICATION_EMAIL_TEMPLATES)
+
     if registration_settings.REGISTER_EMAIL_VERIFICATION_ENABLED:
         signer = RegisterEmailSigner({
             'user_id': user.pk,

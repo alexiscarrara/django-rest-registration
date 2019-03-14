@@ -48,6 +48,7 @@ class ResetPasswordSigner(URLParamsSigner):
 
 class SendResetPasswordLinkSerializer(serializers.Serializer):
     login = serializers.CharField(required=True)
+    language = serializers.CharField()
 
 
 def get_login_fields():
@@ -67,6 +68,7 @@ def send_reset_password_link(request):
     serializer = SendResetPasswordLinkSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     login = serializer.validated_data['login']
+    language = serializer.validated_data['language']
 
     user = None
     for login_field in get_login_fields():
@@ -82,8 +84,11 @@ def send_reset_password_link(request):
         'user_id': user.pk,
     }, request=request)
 
-    template_config = (
-        registration_settings.RESET_PASSWORD_VERIFICATION_EMAIL_TEMPLATES)
+    if language:
+        template_config = (registration_settings.RESET_PASSWORD_VERIFICATION_EMAIL_TEMPLATES_I18N[language])
+    else:
+        template_config = (
+            registration_settings.RESET_PASSWORD_VERIFICATION_EMAIL_TEMPLATES)
     send_verification_notification(user, signer, template_config)
 
     return get_ok_response('Reset link sent')
