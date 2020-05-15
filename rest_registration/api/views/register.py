@@ -1,3 +1,5 @@
+import requests
+
 from django.http import Http404
 from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
@@ -28,6 +30,32 @@ class RegisterSigner(URLParamsSigner):
         return registration_settings.REGISTER_VERIFICATION_PERIOD
 
 
+def check_recaptcha_token(key, token, ip=None):
+
+    if ip is None:
+        data={
+            'secret': key,
+            'response': token
+        }
+    else:
+        data={
+            'secret': key,
+            'response': token,
+            'remoteip': get_client_ip(self.request),  # Optional
+        }
+    r = requests.post(
+        'https://www.google.com/recaptcha/api/siteverify',
+        data
+    )
+
+    if r.json()['success']:
+        # Successfuly validated
+        # Handle the submission, with confidence!
+        return True
+
+    # Error while verifying the captcha
+    return False
+
 @api_view_serializer_class_getter(
     lambda: registration_settings.REGISTER_SERIALIZER_CLASS)
 @api_view(['POST'])
@@ -36,6 +64,10 @@ def register(request):
     '''
     Register new user.
     '''
+
+    # Check reCaptcha
+
+
     serializer_class = registration_settings.REGISTER_SERIALIZER_CLASS
     serializer = serializer_class(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -49,6 +81,17 @@ def register(request):
         if (email_field not in serializer.validated_data
                 or not serializer.validated_data[email_field]):
             raise BadRequest("User without email cannot be verified")
+
+    # Check if reCaptcha is enabled
+    if registration_settings.RECAPTCHA_ENABLED:
+        recaptcha_key = get_user_setting('RECAPTCHA_KEY')
+        recaptcha_token = request.data.get('recaptcha_token', None)
+        if recaptcha_key is None:
+            raise BadRequest("reCaptcha enabled, missing key")
+        if recaptcha_token is None:
+            raise BadRequest("reCaptcha enabled, missing token")
+        if not check_recaptcha_token:
+            raise BadRequest("Error with reCaptcha token")
 
     user = serializer.save(**kwargs)
 

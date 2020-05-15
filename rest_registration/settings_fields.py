@@ -140,6 +140,12 @@ MISC_SETTINGS_FIELDS = [
     ),
 ]
 
+RECAPTCHA_SETTINGS_FIELDS = [
+    Field('RECAPTCHA_ENABLED', default=False),
+    Field('RECAPTCHA_KEY')
+
+]
+
 SETTINGS_FIELDS_GROUPS_MAP = OrderedDict([
     ('user', USER_SETTINGS_FIELDS),
     ('register', REGISTER_SETTINGS_FIELDS),
